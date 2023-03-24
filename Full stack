@@ -1,0 +1,103 @@
+import React, { useState } from 'react';
+
+function TextEditor() {
+  const [text, setText] = useState('');
+  const [boldSelection, setBoldSelection] = useState(null);
+  const [italicSelection, setItalicSelection] = useState(null);
+
+  const handleTextChange = (e) => {
+    setText(e.target.value);
+  };
+
+  const handleSelectionChange = () => {
+    const selection = window.getSelection();
+    const selectedText = selection.toString();
+    const selectionStart = selection.anchorOffset;
+    const selectionEnd = selection.focusOffset;
+    const selectionRange = selection.getRangeAt(0);
+
+    if (selectionRange.getClientRects().length > 0) {
+      const rect = selectionRange.getClientRects()[0];
+      const rangeRect = {
+        top: rect.top,
+        bottom: rect.bottom,
+        left: rect.left,
+        width: rect.width,
+      };
+
+      if (boldSelection) {
+        if (
+          selectionStart >= boldSelection.start &&
+          selectionEnd <= boldSelection.end
+        ) {
+          setBoldSelection(null);
+        } else {
+          const newBoldSelection = {
+            text: selectedText,
+            start: selectionStart,
+            end: selectionEnd,
+            rect: rangeRect,
+          };
+          setBoldSelection(newBoldSelection);
+        }
+      }
+
+      if (italicSelection) {
+        if (
+          selectionStart >= italicSelection.start &&
+          selectionEnd <= italicSelection.end
+        ) {
+          setItalicSelection(null);
+        } else {
+          const newItalicSelection = {
+            text: selectedText,
+            start: selectionStart,
+            end: selectionEnd,
+            rect: rangeRect,
+          };
+          setItalicSelection(newItalicSelection);
+        }
+      }
+    }
+  };
+
+  const handleBoldClick = () => {
+    if (boldSelection) {
+      const { text, start, end } = boldSelection;
+      const newText =
+        text.slice(0, start) +
+        `<b>${text.slice(start, end)}</b>` +
+        text.slice(end);
+      setText(newText);
+      setBoldSelection(null);
+    }
+  };
+
+  const handleItalicClick = () => {
+    if (italicSelection) {
+      const { text, start, end } = italicSelection;
+      const newText =
+        text.slice(0, start) +
+        `<i>${text.slice(start, end)}</i>` +
+        text.slice(end);
+      setText(newText);
+      setItalicSelection(null);
+    }
+  };
+
+  return (
+    <div>
+      <div
+        contentEditable
+        onInput={handleTextChange}
+        onMouseUp={handleSelectionChange}
+      >
+        {text}
+      </div>
+      <button onClick={handleBoldClick}>Bold</button>
+      <button onClick={handleItalicClick}>Italic</button>
+    </div>
+  );
+}
+
+export default TextEditor;
